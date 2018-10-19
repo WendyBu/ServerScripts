@@ -1,5 +1,5 @@
 """
-RNA-seq, making tracks
+RNA-seq, making track, generate the bigwig file.
 "remember to load danpos"
 """
 
@@ -45,8 +45,14 @@ def generate_track_cmd(sampleName, trackDir, bam):
     return cmd0, cmd1, cmd2, cmd3
 
 
+def generate_ucsc_trackTxt(sampleName, bwPath_Cig):
+    trackTxt = "track type=bigWig name=\'" + sampleName + "\' description=\"\" visibility=2  db=\"hg19\" color=0,0,255 maxHeightPixels=60:60:60 windowingFunction=maximum viewLimits=0:80 autoScale=off bigDataUrl=http://cigwiki.houstonmethodist.org/trackhub/yiwen/"+ bwPath_Cig + sampleName + ".nor.bw"
+    return trackTxt
+
+
 def main(project_root):
     # create track/ and track_bin/
+    f = open('UCSC_trackTxt.txt', 'w+')                                                     # step2
     track_dir = os.path.join(project_root, "track")
     if not os.path.exists(track_dir):
         os.mkdir(track_dir)
@@ -59,10 +65,13 @@ def main(project_root):
         if not os.path.exists(bam_track_dir):
             os.mkdir(bam_track_dir)
         sampleName = bam_track_dir.split("/")[-1]
-        cmd0, cmd1, cmd2, cmd3 = generate_track_cmd(sampleName, bam_track_dir, bam)
-        generate_pbs(cmd0, cmd1, cmd2, cmd3, binName = sampleName, binPath = track_bin)
+        # cmd0, cmd1, cmd2, cmd3 = generate_track_cmd(sampleName, bam_track_dir, bam)        ## step1:generate bw
+        # generate_pbs(cmd0, cmd1, cmd2, cmd3, binName = sampleName, binPath = track_bin)    ## step1: generate bw
+        bwPath = "MMC/"                                                                      # step2
+        ucscTrack = generate_ucsc_trackTxt(sampleName, bwPath_Cig=bwPath)                     # step2
+        f.write("%s\n" % ucscTrack)                                                            # step2
+    f.close()                                                                                  # step2
     pass
-
 
 if __name__ == "__main__":
     main(sys.argv[1])
@@ -71,3 +80,6 @@ if __name__ == "__main__":
 
 # giving the project_dir_name, run all the samples inside tophat of it
 # python /archive2/tmhyxb9/ToolBox/RNA_seq_track.py /archive2/tmhyxb9/MMC/
+# excute step1
+# move the bw file into cigwiki
+# excute step2 commands
