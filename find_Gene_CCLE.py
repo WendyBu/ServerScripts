@@ -23,14 +23,13 @@ def get_geneID(gene_symbol):
         print "Invalid input gene!"
 
 
-def extract_Data(geneID, tumor):
+def extract_Data(geneIDs, tumor):
     df_full = pd.read_csv("/archive2/tmhyxb9/dataBase/CCLE/qauntile_RPKM/quantiled_RPKM_2.csv", sep="\t", index_col=0)
-    df_gene = df_full.loc[[geneID],]
+    df_gene = df_full.loc[geneIDs,]
     if tumor:
         df_tumor = [col for col in df_gene.columns if tumor in col]
         df_gene = df_gene.loc[:,df_tumor]
     df_T = df_gene.T
-    df_T.sort_values(by=geneID, axis=0, ascending=False, inplace=True)
     return df_T
 
 
@@ -43,35 +42,55 @@ def add_label(df):
     return df
 
 
+def add_histType(df, hist):
+    annotFile = "/archive2/tmhyxb9/dataBase/CCLE/CCLE_sample_info_file_2012-10-18.txt"
+    annot = pd.read_csv(annotFile, sep="\t", index_col=0)
+    annot = annot.loc[:, ['Histology','Hist Subtype1']]
+    df.reset_index(inplace=True)
+    df["CCLE_name"] = df.iloc[:,0].str.split(" ", expand=True).iloc[:,0]
+    df.set_index("CCLE_name", inplace=True)
+    df_hist = df.join(annot,  how="left")
+    df_histed = df_hist[df_hist.loc[:,"Hist Subtype1"].str.contains(hist, na=False)]
+    return df_histed
+
 
 def main():
     tumor = None
+    genes = []
     # Read file and arguments
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "g:t:", ["gene=", "tumor="])
+        opts, args = getopt.getopt(sys.argv[1:], "g:t:o:h:", ["gene=", "tumor=", "output=", "histSubtype"])
     except getopt.GetoptError as err:
-        print str(err)  # will print something like "option -a not recognized"
+        print str(err)  # will print something like "option -a not recognized"wge
         sys.exit(2)
     for o, a in opts:
         if o in ["-g", "--gene"]:
             gene = a.upper()
+            genes.append(gene)
         elif o in ("-t", "--tumor"):
             tumor = a.upper()
+        elif o in ("-o", "--output"):
+            outputFile = a
+        elif o in ("-h", "--histSubtype"):
+            hist = a
         else:
             assert False, "unhandled option"
+
     # Retrive gene ID (from symbol to ensemble ID)
-    geneID = get_geneID(gene)
-    # Extract data
-    df_data = extract_Data(geneID, tumor)
+    geneID_gene = {}
+    geneIDs = []
+    for gene in genes:
+        geneID = get_geneID(gene)
+        geneIDs.append(geneID)
+        geneID_gene[geneID] = gene
+    # # Extract data
+    df_data = extract_Data(geneIDs, tumor)
     # add label
     df_data = add_label(df_data)
-    df_data.rename(columns={geneID: gene}, inplace=True)
-    # save file as .xls
-    if tumor:
-        filename = "/archive2/tmhyxb9/dataBase/CCLE/qauntile_RPKM/results/" + gene + "_" + tumor + "_CCLE.xls"
-    else:
-        filename = "/archive2/tmhyxb9/dataBase/CCLE/qauntile_RPKM/results/" + gene + "_CCLE.xls"
-    df_data.to_csv(filename, sep="\t")
+    df_data.rename(columns=geneID_gene, inplace=True)
+    # add histtype
+    df_data = add_histType(df_data, hist)
+    df_data.to_csv(outputFile, sep="\t")
     pass
 
 
@@ -79,6 +98,7 @@ if __name__ == "__main__":
     main()
 
 
-# python find_Gene_CCLE.py -g KIAA1429 -t liver
-# python find_Gene_CCLE.py -g LILRB1
-# LILRB1, 2, 3, 4, 5
+
+# python find_Gene_CCLE.py -g LILRB1 -g LILRB2 -g LILRB3 -g LILRB4 -g LILRB5 -h lymph -o ../results/LILRBs_ccle_annot_lym.xls
+# usage: -g  genename; -h histology; -o outputfile -t tumorname
+
