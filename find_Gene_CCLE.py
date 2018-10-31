@@ -50,12 +50,14 @@ def add_histType(df, hist):
     df["CCLE_name"] = df.iloc[:,0].str.split(" ", expand=True).iloc[:,0]
     df.set_index("CCLE_name", inplace=True)
     df_hist = df.join(annot,  how="left")
-    df_histed = df_hist[df_hist.loc[:,"Hist Subtype1"].str.contains(hist, na=False)]
-    return df_histed
+    if hist:
+        df_hist = df_hist[df_hist.loc[:,"Hist Subtype1"].str.contains(hist, na=False)]
+    return df_hist
 
 
 def main():
     tumor = None
+    hist = None
     genes = []
     # Read file and arguments
     try:
@@ -89,6 +91,7 @@ def main():
     df_data = add_label(df_data)
     df_data.rename(columns=geneID_gene, inplace=True)
     # add histtype
+
     df_data = add_histType(df_data, hist)
     df_data.to_csv(outputFile, sep="\t")
     pass
@@ -101,4 +104,6 @@ if __name__ == "__main__":
 
 # python find_Gene_CCLE.py -g LILRB1 -g LILRB2 -g LILRB3 -g LILRB4 -g LILRB5 -h lymph -o ../results/LILRBs_ccle_annot_lym.xls
 # usage: -g  genename; -h histology; -o outputfile -t tumorname
+# python find_Gene_CCLE.py -g EZH2 -g FBL -t prostate -o ../results/EZH_FLB_PCs.xls
+# python find_Gene_CCLE.py -g EZH2 -g FBL  -o ../results/EZH_FLB_ccle.xls
 
