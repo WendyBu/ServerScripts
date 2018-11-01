@@ -20,6 +20,7 @@ def get_geneID(gene_symbol):
         s = gene_Table[gene_Table.Symbol == gene_symbol]
         return s.index.values[0]
     except:
+        print gene_symbol
         print "Invalid input gene!"
 
 
@@ -91,7 +92,6 @@ def main():
     df_data = add_label(df_data)
     df_data.rename(columns=geneID_gene, inplace=True)
     # add histtype
-
     df_data = add_histType(df_data, hist)
     df_data.to_csv(outputFile, sep="\t")
     pass
@@ -104,6 +104,10 @@ if __name__ == "__main__":
 
 # python find_Gene_CCLE.py -g LILRB1 -g LILRB2 -g LILRB3 -g LILRB4 -g LILRB5 -h lymph -o ../results/LILRBs_ccle_annot_lym.xls
 # usage: -g  genename; -h histology; -o outputfile -t tumorname
+# -g -o are required; -t -h are optional
 # python find_Gene_CCLE.py -g EZH2 -g FBL -t prostate -o ../results/EZH_FLB_PCs.xls
 # python find_Gene_CCLE.py -g EZH2 -g FBL  -o ../results/EZH_FLB_ccle.xls
+# python find_Gene_CCLE.py -g LILRB1 -g LILRB2 -g LILRB3 -g LILRB4 -g LILRB5 -t lung -o ../results/LILRBs_ccle_lung.xls
+# python find_Gene_CCLE.py -g SLC36A1 -g FBL8 -g FXR1 -g CDK4 -g CDK6 -g CCND1 -g MTOR  -o ../results/AKI_ccle.xls
+
 
