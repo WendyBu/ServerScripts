@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="2faf65e3-284c-4196-a837-f5ef11e966c2" name="tmhyxb9@hmrihpcp01.tmh.tmhs" url="http://tmhyxb9@hmrihpcp01.tmh.tmhs">
+        <fileTransfer host="tmhyxb9@hmrihpcp01.tmh.tmhs" port="22" accessType="SFTP">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" shareSSLContext="true" />
+          </advancedOptions>
+          <option name="port" value="22" />
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>

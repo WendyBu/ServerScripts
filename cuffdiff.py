@@ -79,7 +79,7 @@ def main():
         inputCommands += inputFiles + " "
 
     command = run_cuffdiff(outputDir, labels, inputCommands) # use absolute path for each input file
-    #
+
     if not os.path.exists(outputDir):
         os.mkdir(outputDir)
     binpath = os.path.join(project_root, "cuffdiff_bin")
