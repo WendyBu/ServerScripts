@@ -35,13 +35,9 @@ def generate_pbs(cmd, binName, binPath):
     pass
 
 
-def run_cuffdiff(outputDir, labels, input_files, replicates=1):
-    cmdLabel = ",".join(labels)
-    cmdInput = " ".join(input_files)
-    cmd = "cuffdiff -p 9 --output-dir " + outputDir + " --labels "+ cmdLabel + " /archive2/tmhyxb9/ref_data/hg19/hg19.refGene.exon.anno.gtf "+ cmdInput
-    # print cmd
+def run_cuffdiff(outputDir, labels, input_files):
+    cmd = "cuffdiff -p 9 --output-dir " + outputDir + " --labels "+ labels + " /archive2/tmhyxb9/ref_data/hg19/hg19.refGene.exon.anno.gtf "+ input_files
     return cmd
-
 
 
 def main():
@@ -50,13 +46,11 @@ def main():
     output folder
     :return:
     """
-    inputFiles = []
-    labels = []
+    inputs = []
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "o:i:", ["output=", "input="])
+        opts, args = getopt.getopt(sys.argv[1:], "o:i:l:", ["output=", "input=", "label="])
     except getopt.GetoptError as err:
         print str(err)  # will print something like "option -a not recognized"
-        usage()
         sys.exit(2)
 
     for o, a in opts:
@@ -67,16 +61,25 @@ def main():
             binName = a
             # print "outputDir", outputDir
         elif o in ("-i", "--input"):
-            labels.append(a)
+            inputs.append(a)
+        elif o in ("-l", "--label"):
+            labels = a
         else:
             assert False, "unhandled option"
-    # print "labels", labels
-    for label in labels:
-        inputFile = os.path.join(cwdir, label,  "accepted_hits.bam")
-        inputFiles.append(inputFile)
-    # print "inputFiles", inputFiles
-    command = run_cuffdiff(outputDir, labels, inputFiles, 1) # use absolute path for each input file
 
+    # generate input commands
+    inputCommands = ""
+    for input in inputs:    # for each item after -i
+        input_sub = input.split(",")
+        inputFiles = ""
+        for input_single_dir in input_sub:
+            inputFile = os.path.join(cwdir, input_single_dir,  "accepted_hits.bam")
+            inputFiles += inputFile + ","
+        inputFiles = inputFiles[0:-1]
+        inputCommands += inputFiles + " "
+
+    command = run_cuffdiff(outputDir, labels, inputCommands) # use absolute path for each input file
+    #
     if not os.path.exists(outputDir):
         os.mkdir(outputDir)
     binpath = os.path.join(project_root, "cuffdiff_bin")
@@ -95,3 +98,6 @@ if __name__ == "__main__":
 # under tophat directory, giving the output folder name and the input folder name
 # python /archive2/tmhyxb9/ToolBox/cuffdiff.py -o cuffdiff_HT -i HT37_MMC -i HT42_MMC -i HT_37C -i HT_42C
 # python /archive2/tmhyxb9/ToolBox/cuffdiff.py -o cuffdiff_SNU -i SNU37MMC -i SNU42MMC -i SNU_37C -i SNU_42C
+# python /archive2/tmhyxb9/ToolBox/cuffdiff.py -o cuffdiff_EZH2 -l control,EZH2_sh1,EZH2_sh2  -i Ctr_sh,Ctr2_sh -i EZH2_sh1,EZH22_sh1 -i EZH2_sh2,EZH22_sh2
+# python /archive2/tmhyxb9/ToolBox/cuffdiff.py -o cuffdiff_FBL -l control,FBL  -i Ctr_sh,Ctr2_sh -i FBL_sh,FBL2_sh
+
