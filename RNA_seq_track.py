@@ -43,6 +43,7 @@ def tophatBam_BigWig(project_root):
         sample_name = bam.split("/")[-2]   # get sample name, one level up from .bam
         cmds = cmds_bamToBigWig(sample_name, track_dir, bam)
         binname = sample_name + "_track"
+        # cmd.generate_pbs(cmds=cmds, binName=binname, binPath=track_bin)
         cmd.generate_submit_pbs(cmds=cmds, binName=binname, binPath=track_bin)
     pass
 
@@ -55,10 +56,10 @@ def generate_trackFile(cigiwig_dirName, sampleNames):
     pass
 
 
-def main(project_root):
+def main(project_root, cigwiki_dir):
     tophatBam_BigWig(project_root)  #step1: generate bigwig (need to move the bw to cigwiki)
     sampleNames = os.listdir(project_root + "/tophat")  #step2 get sample names
-    generate_trackFile(cigiwig_dirName="FBL_RNA_mergeDup", sampleNames=sampleNames)  #step2 make track files
+    generate_trackFile(cigiwig_dirName=cigwiki_dir, sampleNames=sampleNames)  #step2 make track files
     pass
 
 
@@ -66,4 +67,6 @@ if __name__ == "__main__":
     main(sys.argv[1])
 
 
+# two arguments:  project_root, one layer before tophat/samplename/bamfile;  second is cigwiki folder
 # python /archive2/tmhyxb9/ToolBox/RNA_seq_track.py /archive2/tmhyxb9/FBL/RNA_seq/tophat_pair
+# python /archive2/tmhyxb9/ToolBox/RNA_seq_track.py /archive2/tmhyxb9/FBL/fastq/rmUMI FBL_ribo_mergeDup
