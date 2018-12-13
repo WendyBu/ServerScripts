@@ -1,0 +1,7 @@
+step1:  sortBed.py
+sort bam and convert to bed
+
+step2: map_distribution.py
+map to gtf.bed
+
+step3: distributionStat.py
